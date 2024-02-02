@@ -64,8 +64,19 @@ else:
         filtered_data = filtered_data / filtered_data.iloc[0] * 100
 
     # Line chart
-    fig = px.line(filtered_data, labels={'value': 'Stock Value'})
-    fig.update_layout(title='Stock Comparison', xaxis_title='Date', yaxis_title='Stock Value')
+    fig_line = px.line(filtered_data, labels={'value': 'Stock Value'})
+    fig_line.update_layout(title='Stock Comparison', xaxis_title='Date', yaxis_title='Stock Value')
 
-    # Show chart
-    st.plotly_chart(fig)
+    # Show line chart
+    st.plotly_chart(fig_line)
+
+    # Display returns in a table
+    st.subheader("Returns Table")
+    returns_table = filtered_data.pct_change().dropna()
+    st.table(returns_table)
+
+    # Heatmap
+    st.subheader("Returns Heatmap")
+    fig_heatmap = px.imshow(returns_table.T, labels=dict(x="Stocks", y="Date", color="Returns"))
+    fig_heatmap.update_layout(title='Returns Heatmap')
+    st.plotly_chart(fig_heatmap)
