@@ -99,7 +99,7 @@ else:
     st.subheader("Returns Table")
     returns_table = calculate_returns(filtered_data, start_date, end_date, daily_returns=False)
 
-    # Function to color code the returns
+    # Function to color code the returns in the table
     def color_negative_red(value):
         if value < 0:
             color = 'red'
@@ -115,8 +115,8 @@ else:
     # Display the color-coded table
     st.dataframe(colored_returns_table)
 
-    # Heatmap
+    # Heatmap with customized color scale
     st.subheader("Returns Heatmap")
-    fig_heatmap = px.imshow(returns_table.T, labels=dict(x="Stocks", y="Year", color="Returns"))
+    fig_heatmap = px.imshow(returns_table.T, labels=dict(x="Stocks", y="Year", color="Returns"), color_continuous_scale=['red', 'yellow', 'green'])
     fig_heatmap.update_layout(title='Annualized Returns Heatmap')
     st.plotly_chart(fig_heatmap)
