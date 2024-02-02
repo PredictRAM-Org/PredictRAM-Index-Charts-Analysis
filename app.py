@@ -16,6 +16,11 @@ def load_data(file_name):
         print(f"Error loading data from {file_path}: {e}")
         return pd.DataFrame()
 
+# Function to calculate returns for a specified duration
+def calculate_returns(data, start_date, end_date):
+    filtered_data = data[(data.index >= start_date) & (data.index <= end_date)]
+    return filtered_data.pct_change().dropna()
+
 # Get the list of files in the folder
 file_names = [
     "^NSEBANK", "^NSEI", "^INDIAVIX", "^CNXPHARMA", "^CNXMEDIA",
@@ -28,8 +33,23 @@ file_names = [
 
 # Sidebar
 st.sidebar.header("Stock Comparison")
-start_date = st.sidebar.date_input("Select start date")
-end_date = st.sidebar.date_input("Select end date")
+start_date = st.sidebar.date_input("Select start date", pd.to_datetime('2022-01-01'))  # Default start date
+end_date = st.sidebar.date_input("Select end date", pd.to_datetime('2022-12-31'))  # Default end date
+
+# Add an option to select different time durations
+tenure_option = st.sidebar.selectbox("Select Time Duration", ["Last 6 months", "1 year", "3 years", "5 years", "10 years"])
+
+# Calculate start date based on selected tenure
+if tenure_option == "Last 6 months":
+    start_date = end_date - pd.DateOffset(months=6)
+elif tenure_option == "1 year":
+    start_date = end_date - pd.DateOffset(years=1)
+elif tenure_option == "3 years":
+    start_date = end_date - pd.DateOffset(years=3)
+elif tenure_option == "5 years":
+    start_date = end_date - pd.DateOffset(years=5)
+elif tenure_option == "10 years":
+    start_date = end_date - pd.DateOffset(years=10)
 
 selected_stocks = st.sidebar.multiselect("Select stocks", file_names)
 
@@ -72,7 +92,7 @@ else:
 
     # Display returns in a table
     st.subheader("Returns Table")
-    returns_table = filtered_data.pct_change().dropna()
+    returns_table = calculate_returns(filtered_data, start_date, end_date)
     st.table(returns_table)
 
     # Heatmap
