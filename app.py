@@ -31,7 +31,8 @@ file_names = [
     "^CNXDIVOP", "^CNXMETAL", "^CNXIT", "^CNXREALTY", "^NSEI",
     "^CNXMNC", "^CRSLDX", "^CNXCMDT", "^CNX100", "^CNXINFRA",
     "^CNX200", "^BSESN", "^CNXENERGY", "^CNXSERVICE", "^CNXPSE",
-    "^NSEMDCP50", "^NSMIDCP", "^NSEBANK", "^CNXFIN", "^CNXPSUBANK"
+    "^NSEMDCP50", "^NSMIDCP", "^NSEBANK", "^CNXFIN", "^CNXPSUBANK",
+    "PGINVIT-IV.NS", "CL=F", "GC=F", "JPYINR=X", "EURINR=X", "GBPINR=X", "INR=X", "BSE-HC.BO"
 ]
 
 # Sidebar
@@ -96,7 +97,19 @@ else:
     # Display returns in a table
     st.subheader("Returns Table")
     returns_table = calculate_returns(filtered_data, start_date, end_date, daily_returns=False)
-    st.table(returns_table)
+
+    # Calculate average returns for specific durations
+    durations = ["3 years", "5 years", "10 years", "6 months"]
+    avg_returns = {}
+    for duration in durations:
+        if duration == "6 months":
+            avg_returns[duration] = returns_table.mean()
+        else:
+            avg_returns[duration] = calculate_returns(filtered_data, start_date - pd.DateOffset(years=int(duration[:-6])), end_date, daily_returns=False).mean()
+
+    # Display average returns in a table
+    avg_returns_df = pd.DataFrame(avg_returns)
+    st.table(avg_returns_df)
 
     # Heatmap
     st.subheader("Returns Heatmap")
