@@ -6,6 +6,7 @@ import plotly.express as px
 # Function to load data from the specified file
 def load_data(file_name):
     file_path = os.path.join("index_data", f"{file_name}.xlsx")
+    print(f"Loading data from file: {file_path}")
     return pd.read_excel(file_path)
 
 # Get the list of files in the folder
