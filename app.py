@@ -51,6 +51,10 @@ else:
         st.error("Ensure that 'Date' column exists in all loaded DataFrames and there is data in the selected date range.")
         st.stop()
 
+    # Convert date to datetime64[ns] for comparison
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+
     # Filter data based on user input
     filtered_data = merged_data[(merged_data.index >= start_date) & (merged_data.index <= end_date)]
 
