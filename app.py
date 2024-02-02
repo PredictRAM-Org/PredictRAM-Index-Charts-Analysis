@@ -44,7 +44,12 @@ if not data:
     st.warning("No valid data found for selected stocks. Please check your data files.")
 else:
     # Merge data on 'Date' column
-    merged_data = pd.concat([df.set_index('Date')[['Adj Close']].rename(columns={'Adj Close': stock}) for stock, df in data.items()], axis=1)
+    try:
+        merged_data = pd.concat([df.set_index('Date')[['Adj Close']].rename(columns={'Adj Close': stock}) for stock, df in data.items()], axis=1)
+    except ValueError as e:
+        st.error(f"Error during concatenation: {e}")
+        st.error("Ensure that 'Date' column exists in all loaded DataFrames and there is data in the selected date range.")
+        st.stop()
 
     # Filter data based on user input
     filtered_data = merged_data[(merged_data.index >= start_date) & (merged_data.index <= end_date)]
