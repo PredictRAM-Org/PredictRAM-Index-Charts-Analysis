@@ -6,8 +6,15 @@ import plotly.express as px
 # Function to load data from the specified file
 def load_data(file_name):
     file_path = os.path.join("index_data", f"{file_name}.xlsx")
-    print(f"Loading data from file: {file_path}")
-    return pd.read_excel(file_path)
+    try:
+        print(f"Loading data from file: {file_path}")
+        df = pd.read_excel(file_path)
+        if 'Date' not in df.columns or 'Adj Close' not in df.columns:
+            raise ValueError("Required columns ('Date' and 'Adj Close') not found in the DataFrame.")
+        return df
+    except Exception as e:
+        print(f"Error loading data from {file_path}: {e}")
+        return pd.DataFrame()
 
 # Get the list of files in the folder
 file_names = [
@@ -29,20 +36,27 @@ selected_stocks = st.sidebar.multiselect("Select stocks", file_names)
 # Load data for selected stocks
 data = {stock: load_data(stock) for stock in selected_stocks}
 
-# Merge data on 'Date' column
-merged_data = pd.concat([data[stock].set_index('Date')[['Adj Close']].rename(columns={'Adj Close': stock}) for stock in selected_stocks], axis=1)
+# Filter out any empty DataFrames
+data = {key: value for key, value in data.items() if not value.empty}
 
-# Filter data based on user input
-filtered_data = merged_data[(merged_data.index >= start_date) & (merged_data.index <= end_date)]
+# Check if there are any DataFrames to concatenate
+if not data:
+    st.warning("No valid data found for selected stocks. Please check your data files.")
+else:
+    # Merge data on 'Date' column
+    merged_data = pd.concat([df.set_index('Date')[['Adj Close']].rename(columns={'Adj Close': stock}) for stock, df in data.items()], axis=1)
 
-# Normalize data if required
-normalize_data = st.sidebar.checkbox("Normalize data")
-if normalize_data:
-    filtered_data = filtered_data / filtered_data.iloc[0] * 100
+    # Filter data based on user input
+    filtered_data = merged_data[(merged_data.index >= start_date) & (merged_data.index <= end_date)]
 
-# Line chart
-fig = px.line(filtered_data, labels={'value': 'Stock Value'})
-fig.update_layout(title='Stock Comparison', xaxis_title='Date', yaxis_title='Stock Value')
+    # Normalize data if required
+    normalize_data = st.sidebar.checkbox("Normalize data")
+    if normalize_data:
+        filtered_data = filtered_data / filtered_data.iloc[0] * 100
 
-# Show chart
-st.plotly_chart(fig)
+    # Line chart
+    fig = px.line(filtered_data, labels={'value': 'Stock Value'})
+    fig.update_layout(title='Stock Comparison', xaxis_title='Date', yaxis_title='Stock Value')
+
+    # Show chart
+    st.plotly_chart(fig)
