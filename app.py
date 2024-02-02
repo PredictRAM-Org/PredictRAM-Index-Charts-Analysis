@@ -2,6 +2,7 @@ import os
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import numpy as np
 
 # Function to load data from the specified file
 def load_data(file_name):
@@ -94,22 +95,25 @@ else:
     # Show line chart
     st.plotly_chart(fig_line)
 
-    # Display returns in a table
+    # Display returns in a table with color coding
     st.subheader("Returns Table")
     returns_table = calculate_returns(filtered_data, start_date, end_date, daily_returns=False)
 
-    # Calculate average returns for specific durations
-    durations = ["3 years", "5 years", "10 years", "6 months"]
-    avg_returns = {}
-    for duration in durations:
-        if duration == "6 months":
-            avg_returns[duration] = returns_table.mean()
+    # Function to color code the returns
+    def color_negative_red(value):
+        if value < 0:
+            color = 'red'
+        elif value > 0:
+            color = 'green'
         else:
-            avg_returns[duration] = calculate_returns(filtered_data, start_date - pd.DateOffset(years=int(duration[:-6])), end_date, daily_returns=False).mean()
+            color = 'yellow'
+        return f'color: {color}'
 
-    # Display average returns in a table
-    avg_returns_df = pd.DataFrame(avg_returns)
-    st.table(avg_returns_df)
+    # Apply the color-coding function to the entire table
+    colored_returns_table = returns_table.style.applymap(color_negative_red)
+
+    # Display the color-coded table
+    st.dataframe(colored_returns_table)
 
     # Heatmap
     st.subheader("Returns Heatmap")
