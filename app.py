@@ -17,9 +17,12 @@ def load_data(file_name):
         return pd.DataFrame()
 
 # Function to calculate returns for a specified duration
-def calculate_returns(data, start_date, end_date):
+def calculate_returns(data, start_date, end_date, daily_returns=True):
     filtered_data = data[(data.index >= start_date) & (data.index <= end_date)]
-    return filtered_data.pct_change().dropna()
+    if daily_returns:
+        return filtered_data.pct_change().dropna()
+    else:
+        return filtered_data.resample('Y').ffill().pct_change().dropna()
 
 # Get the list of files in the folder
 file_names = [
@@ -92,11 +95,11 @@ else:
 
     # Display returns in a table
     st.subheader("Returns Table")
-    returns_table = calculate_returns(filtered_data, start_date, end_date)
+    returns_table = calculate_returns(filtered_data, start_date, end_date, daily_returns=False)
     st.table(returns_table)
 
     # Heatmap
     st.subheader("Returns Heatmap")
-    fig_heatmap = px.imshow(returns_table.T, labels=dict(x="Stocks", y="Date", color="Returns"))
-    fig_heatmap.update_layout(title='Returns Heatmap')
+    fig_heatmap = px.imshow(returns_table.T, labels=dict(x="Stocks", y="Year", color="Returns"))
+    fig_heatmap.update_layout(title='Annualized Returns Heatmap')
     st.plotly_chart(fig_heatmap)
